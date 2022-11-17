@@ -1,1 +1,28 @@
-
+version: 2.1
+jobs:
+  Install_Git:
+    docker:
+      - image: justb4/jmeter:latest
+    steps:
+      - checkout
+      - run:
+          name: apk update
+          command: apk update
+      - run:
+          name:  install git
+          command: apk add git
+      - run:
+          name:  Get QA No. and Testlink message
+          command: |
+            COMMIT_MESSAGE=$(git log --format=oneline -n 1 $CIRCLE_SHA1)
+            set -- $COMMIT_MESSAGE
+            echo this is the commit message $COMMIT_MESSAGE
+            mkdir results_folder
+            jmeter -n -t JmxFile/Derivcom.jmx -l jmeter_report.csv -e -o results_folder
+      - store_artifacts:
+          path: results_folder
+workflows:
+  version: 2.1
+  example_jobs:
+    jobs:
+      - Install_Git
